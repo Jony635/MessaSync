@@ -1,5 +1,6 @@
 package com.jony635.messasync;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,12 +12,20 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPrefs;
+
+    private User loggedUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -33,21 +42,21 @@ public class MainActivity extends AppCompatActivity {
         }
         else
         {
-            //Login the user
+            loggedUser = new User(sharedPrefs.getString("user", ""), sharedPrefs.getString("password", ""));
         }
-
-
     }
 
-    void RegisterUser(String user)
+    void RegisterUser(final String userPredefined)
     {
         LayoutInflater inflater = getLayoutInflater();
 
         final View viewInflated = inflater.inflate(R.layout.edittextdialog, null, false);
+
         final EditText userEditText = viewInflated.findViewById(R.id.userEditTextDialog);
-        if(!user.isEmpty())
-            userEditText.setText(user);
         final EditText passwordEditText = viewInflated.findViewById(R.id.passwordEditTextDialog);
+
+        if(!userPredefined.isEmpty())
+            userEditText.setText(userPredefined);
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setView(viewInflated);
@@ -72,13 +81,56 @@ public class MainActivity extends AppCompatActivity {
 
                 else
                 {
-                    //Store this pair in the database
+                    //Search for the user in the database
 
+                    final String user = userEditText.getText().toString();
+                    final String password = passwordEditText.getText().toString();
+
+                    Task<DocumentSnapshot> documentFinder = db.collection("users").document(user).get();
+                    documentFinder.addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>()
+                    {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task)
+                        {
+                            DocumentSnapshot document = task.getResult();
+                            if(document.exists())
+                            {
+                                //Check if it has the same password stored
+
+                                if(((String)document.get("password")).compareTo(password) == 0)
+                                {
+                                    loggedUser = document.toObject(User.class);
+
+                                    UpdateSharedPreferences();
+                                }
+                                else
+                                {
+                                    Toast.makeText(MainActivity.this, "Error: User exists and the password is different", Toast.LENGTH_SHORT).show();
+                                    RegisterUser(user);
+                                }
+                            }
+                            else
+                            {
+                                //This document does not exist, create it
+                                loggedUser = new User(user, password);
+
+                                db.collection("users").document(user).set(loggedUser);
+
+                                UpdateSharedPreferences();
+                            }
+                        }
+                    });
                 }
             }
         });
 
         builder.create().show();
+    }
+
+    void UpdateSharedPreferences()
+    {
+        sharedPrefs.edit().putString("user", loggedUser.user).apply();
+        sharedPrefs.edit().putString("password", loggedUser.password).apply();
     }
 
 }
