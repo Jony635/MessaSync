@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/userEditText"
+        android:id="@+id/roomNameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -18,11 +18,12 @@
         android:inputType="text|textCapSentences"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/passwordEditText"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/roomPasswordEditText"
+        app:layout_constraintTop_toTopOf="parent"
+        android:autofillHints="" />
 
     <EditText
-        android:id="@+id/passwordEditText"
+        android:id="@+id/roomPasswordEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
@@ -34,30 +35,29 @@
         android:ems="10"
         android:inputType="text|textCapSentences|textPassword"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/PasswordTextView"
-        app:layout_constraintTop_toBottomOf="@+id/userEditText" />
+        app:layout_constraintStart_toEndOf="@+id/roomPasswordTextView"
+        app:layout_constraintTop_toBottomOf="@+id/roomNameEditText"
+        android:autofillHints="" />
 
     <TextView
         android:id="@+id/roomNameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="22dp"
-        android:layout_marginLeft="22dp"
         android:layout_marginTop="13dp"
         android:gravity="center_vertical"
-        android:text="@string/userTextViewString"
+        android:text="@string/roomNameString"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/userEditText" />
+        app:layout_constraintTop_toTopOf="@+id/roomNameEditText" />
 
     <TextView
-        android:id="@+id/PasswordTextView"
+        android:id="@+id/roomPasswordTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
-        android:layout_marginLeft="20dp"
         android:layout_marginTop="13dp"
         android:gravity="center_vertical"
-        android:text="@string/passwordTextViewString"
+        android:text="@string/roomPassword"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/passwordEditText" />
+        app:layout_constraintTop_toTopOf="@+id/roomPasswordEditText" />
 </androidx.constraintlayout.widget.ConstraintLayout>

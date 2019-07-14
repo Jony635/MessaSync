@@ -3,4 +3,6 @@
     <string name="userTextViewString">User:</string>
     <string name="passwordTextViewString">Password:</string>
     <string name="LogOutString">Log Out</string>
+    <string name="roomNameString">Room Name:</string>
+    <string name="roomPassword">Room Password:</string>
 </resources>
