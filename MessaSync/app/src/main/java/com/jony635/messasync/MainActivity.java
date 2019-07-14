@@ -1,11 +1,13 @@
 package com.jony635.messasync;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -20,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -38,6 +39,8 @@ import javax.annotation.Nullable;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String ROOM_NAME_MESSAGE = "com.jony635.messasync.ROOMNAME";
+
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private SharedPreferences sharedPrefs;
 
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private CollectionReference roomsCol;
 
     private RecyclerView roomsRV;
-    private Adapter roomsAdapter;
+    private RoomsAdapter roomsAdapter;
     private RecyclerView.LayoutManager layoutManager;
 
     private List<Room> rooms = new ArrayList<>();
@@ -65,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         layoutManager = new LinearLayoutManager(this);
         roomsRV.setLayoutManager(layoutManager);
 
-        roomsAdapter = new Adapter();
+        roomsAdapter = new RoomsAdapter();
         roomsRV.setAdapter(roomsAdapter);
 
         roomsCol.orderBy("date").addSnapshotListener(new EventListener<QuerySnapshot>()
@@ -107,21 +110,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder>
+    public class RoomsAdapter extends RecyclerView.Adapter<RoomsAdapter.RoomsViewHolder>
     {
-        public class ViewHolder extends RecyclerView.ViewHolder
+        public class RoomsViewHolder extends RecyclerView.ViewHolder
         {
             //View references
             public TextView roomName;
 
-            public ViewHolder(View view)
+            public RoomsViewHolder(View view)
             {
                 super(view);
 
                 //Initialize view references
                 roomName = view.findViewById(R.id.roomLayout);
 
-                if(loggedUser.user.compareTo("Jony635") == 0)
+                if(loggedUser != null && loggedUser.user.compareTo("Jony635") == 0)
                 {
                     roomName.setOnLongClickListener(new View.OnLongClickListener() {
                         @Override
@@ -132,24 +135,36 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                 }
+
+                roomName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view)
+                    {
+                        int position = getLayoutPosition();
+
+                        Intent intent = new Intent(MainActivity.this, RoomActivity.class);
+                        intent.putExtra(ROOM_NAME_MESSAGE, rooms.get(position).name);
+                        startActivity(intent);
+                    }
+                });
             }
         }
 
         @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+        public RoomsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
         {
-            //Create a ViewHolder with an inflated view and return it.
+            //Create a RoomsViewHolder with an inflated view and return it.
 
             //Can be a custom layout view
             View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.roomlayout, parent, false);
 
-            return new ViewHolder(view);
+            return new RoomsViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position)
+        public void onBindViewHolder(@NonNull RoomsViewHolder holder, int position)
         {
             //Set the holder views content to the stored position one.
             holder.roomName.setText(rooms.get(position).name);
