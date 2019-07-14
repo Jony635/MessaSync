@@ -43,6 +43,7 @@
         android:clickable="true"
         android:cropToPadding="false"
         android:elevation="6dp"
+        android:onClick="SendMessage"
         app:fabCustomSize="53dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

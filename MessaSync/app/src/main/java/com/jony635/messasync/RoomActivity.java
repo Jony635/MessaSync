@@ -5,9 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -54,13 +56,17 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
+    private SharedPreferences sharedPrefs;
 
     private DocumentReference roomRef;
     private Room room;
 
     private RecyclerView messagesRV;
+    private EditText inputText;
 
     private List<Message> messages = new ArrayList<>();
+
+    private User loggedUser = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -68,11 +74,14 @@ public class RoomActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
 
+        sharedPrefs = getSharedPreferences("data", MODE_PRIVATE);
+        loggedUser = new User(sharedPrefs.getString("user", ""), sharedPrefs.getString("password", ""));
+
         messagesRV = findViewById(R.id.messagesRV);
 
         Init();
 
-
+        inputText = findViewById(R.id.InputText);
     }
 
     private void Init()
@@ -93,7 +102,7 @@ public class RoomActivity extends AppCompatActivity {
                     }
                 });
 
-                roomRef.collection("messages").addSnapshotListener(new EventListener<QuerySnapshot>()
+                roomRef.collection("messages").orderBy("date").addSnapshotListener(new EventListener<QuerySnapshot>()
                 {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e)
@@ -109,9 +118,19 @@ public class RoomActivity extends AppCompatActivity {
                         {
                             messages.add(document.toObject(Message.class));
                         }
+
+                        //TODO: NOTIFY THE ADAPTER
                     }
                 });
             }
         }
+    }
+
+    public void SendMessage(View view)
+    {
+        Message newMessage = new Message(loggedUser, inputText.getText().toString());
+        roomRef.collection("messages").document().set(newMessage);
+
+        inputText.setText(null);
     }
 }
