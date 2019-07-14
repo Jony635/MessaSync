@@ -2,14 +2,17 @@ package com.jony635.messasync;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -32,25 +35,39 @@ public class RoomActivity extends AppCompatActivity {
     {
         @NonNull
         @Override
-        public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+        {
+            //TODO: HERE WE HAVE TO GUESS WHAT KIND OF LAYOUT WE INFLATE,
+            //TODO: DEPENDING OF THE USER AND THE PREVIOUS MESSAGE.
+            //TODO: PROB USING THE viewType.
+
+            //View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_text_view, parent, false);
             return null;
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull MessageViewHolder holder, int position)
+        {
 
         }
 
         @Override
-        public int getItemCount() {
-            return 0;
+        public int getItemCount()
+        {
+            return messages.size();
         }
 
         class MessageViewHolder extends RecyclerView.ViewHolder
         {
-            public MessageViewHolder(@NonNull View itemView)
+            TextView userTextView;
+            TextView contentTextView;
+
+            public MessageViewHolder(@NonNull View view)
             {
-                super(itemView);
+                super(view);
+
+                userTextView = view.findViewById(R.id.userName);
+                contentTextView = view.findViewById(R.id.userMessage);
             }
         }
     }
@@ -62,6 +79,8 @@ public class RoomActivity extends AppCompatActivity {
     private Room room;
 
     private RecyclerView messagesRV;
+    private MessageAdapter adapter;
+
     private EditText inputText;
 
     private List<Message> messages = new ArrayList<>();
@@ -78,6 +97,9 @@ public class RoomActivity extends AppCompatActivity {
         loggedUser = new User(sharedPrefs.getString("user", ""), sharedPrefs.getString("password", ""));
 
         messagesRV = findViewById(R.id.messagesRV);
+        adapter = new MessageAdapter();
+        messagesRV.setAdapter(adapter);
+        messagesRV.setLayoutManager(new LinearLayoutManager(this));
 
         Init();
 
