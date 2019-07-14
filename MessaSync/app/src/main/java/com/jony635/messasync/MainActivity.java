@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -46,7 +48,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void RegisterUser(final String userPredefined)
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        super.onCreateOptionsMenu(menu);
+
+        getMenuInflater().inflate(R.menu.mainmenu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId())
+        {
+            case R.id.LogOutmenuItem:
+            {
+                LogOut();
+                break;
+            }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+        return true;
+    }
+
+    private void RegisterUser(final String userPredefined)
     {
         LayoutInflater inflater = getLayoutInflater();
 
@@ -127,10 +155,14 @@ public class MainActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    void UpdateSharedPreferences()
+    private void UpdateSharedPreferences()
     {
         sharedPrefs.edit().putString("user", loggedUser.user).apply();
         sharedPrefs.edit().putString("password", loggedUser.password).apply();
     }
 
+    private void LogOut()
+    {
+
+    }
 }
