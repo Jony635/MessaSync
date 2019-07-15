@@ -172,6 +172,10 @@ public class MainActivity extends AppCompatActivity {
                                 RoomPasswordRequest(room);
                             }
                         }
+                        else
+                        {
+                            GoToRoomActivity(room);
+                        }
                     }
                 });
             }
