@@ -31,24 +31,48 @@ import javax.annotation.Nullable;
 
 public class RoomActivity extends AppCompatActivity {
 
+    public static final int OTHER_MESSAGE = 0;
+    public static final int OTHER_MESSAGE_USER = 1;
+    public static final int MESSAGE = 2;
+    public static final int MESSAGE_USER = 3;
+
     class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>
     {
         @NonNull
         @Override
         public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
         {
-            //TODO: HERE WE HAVE TO GUESS WHAT KIND OF LAYOUT WE INFLATE,
-            //TODO: DEPENDING OF THE USER AND THE PREVIOUS MESSAGE.
-            //TODO: PROB USING THE viewType.
+            View view = null;
 
-            //View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.my_text_view, parent, false);
-            return null;
+            switch(viewType)
+            {
+                case MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message, parent, false);
+                    break;
+                case MESSAGE_USER:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.messageuser, parent, false);
+                    break;
+                case OTHER_MESSAGE:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.othermessage, parent, false);
+                    break;
+                case OTHER_MESSAGE_USER:
+                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.othermessageuser, parent, false);
+                    break;
+            }
+
+            assert view != null;
+
+            return new MessageViewHolder(view, viewType);
         }
 
         @Override
         public void onBindViewHolder(@NonNull MessageViewHolder holder, int position)
         {
+            Message message = messages.get(position);
+            holder.contentTextView.setText(message.content);
 
+            if(holder.userTextView != null)
+                holder.userTextView.setText(message.owner.user);
         }
 
         @Override
@@ -57,17 +81,56 @@ public class RoomActivity extends AppCompatActivity {
             return messages.size();
         }
 
+        @Override
+        public int getItemViewType(int position)
+        {
+            super.getItemViewType(position);
+
+            Message message = messages.get(position);
+
+            if (position == 0)
+            {
+                if (message.owner.user.compareTo(loggedUser.user) == 0)
+                    return MESSAGE_USER;
+                else
+                    return OTHER_MESSAGE_USER;
+            }
+            else
+            {
+                if (message.owner.user.compareTo(messages.get(position - 1).owner.user) != 0)
+                {
+                    //Different owners, use the user version
+                    if (message.owner.user.compareTo(loggedUser.user) != 0)
+                        return OTHER_MESSAGE_USER;
+                    else
+                        return MESSAGE_USER;
+                }
+                else
+                {
+                    //Same owner, use the message version
+                    if (message.owner.user.compareTo(loggedUser.user) != 0)
+                        return OTHER_MESSAGE;
+                    else
+                        return MESSAGE;
+                }
+            }
+        }
+
         class MessageViewHolder extends RecyclerView.ViewHolder
         {
+            int viewType;
+
             TextView userTextView;
             TextView contentTextView;
 
-            public MessageViewHolder(@NonNull View view)
+            public MessageViewHolder(@NonNull View view, int viewType)
             {
                 super(view);
 
-                userTextView = view.findViewById(R.id.userName);
-                contentTextView = view.findViewById(R.id.userMessage);
+                this.viewType = viewType;
+
+                userTextView = view.findViewById(R.id.user);
+                contentTextView = view.findViewById(R.id.message);
             }
         }
     }
@@ -141,7 +204,7 @@ public class RoomActivity extends AppCompatActivity {
                             messages.add(document.toObject(Message.class));
                         }
 
-                        //TODO: NOTIFY THE ADAPTER
+                        adapter.notifyDataSetChanged();
                     }
                 });
             }
@@ -150,6 +213,9 @@ public class RoomActivity extends AppCompatActivity {
 
     public void SendMessage(View view)
     {
+        if(inputText.getText().length() <= 0)
+            return;
+
         Message newMessage = new Message(loggedUser, inputText.getText().toString());
         roomRef.collection("messages").document().set(newMessage);
 

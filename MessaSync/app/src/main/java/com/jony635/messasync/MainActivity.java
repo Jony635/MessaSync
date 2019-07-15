@@ -141,10 +141,37 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View view)
                     {
                         int position = getLayoutPosition();
+                        Room room = rooms.get(position);
 
-                        Intent intent = new Intent(MainActivity.this, RoomActivity.class);
-                        intent.putExtra(ROOM_NAME_MESSAGE, rooms.get(position).name);
-                        startActivity(intent);
+                        if(!room.password.isEmpty())
+                        {
+                            //Search for the password in the SharedPreferences, in order to not be
+                            //requesting this to the user all the time.
+
+                            if(sharedPrefs.contains(room.name))
+                            {
+                                String storedPassword = sharedPrefs.getString(room.name, null);
+
+                                if(storedPassword != null && room.password.compareTo(storedPassword) == 0)
+                                {
+                                    //The password is correct, create the Intent and start the new
+                                    //activity.
+
+                                    GoToRoomActivity(room);
+                                }
+                                else
+                                {
+                                    //The stored password is not correct, ask the user for a new
+                                    //password.
+                                    RoomPasswordRequest(room);
+                                }
+                            }
+                            else
+                            {
+                                //None password stored, request the user a password.
+                                RoomPasswordRequest(room);
+                            }
+                        }
                     }
                 });
             }
@@ -330,8 +357,49 @@ public class MainActivity extends AppCompatActivity {
                     String roomName = roomNameEditText.getText().toString();
                     String roomPassword = roomPasswordEditText.getText().toString();
 
-                    Room room = new Room(roomName, roomPassword, new Timestamp(new Date()));
+                    Room room = new Room(roomName, roomPassword, Timestamp.now());
                     roomsCol.document(roomName).set(room);
+                }
+            }
+        });
+        builder.create().show();
+    }
+
+    private void GoToRoomActivity(Room room)
+    {
+        Intent intent = new Intent(MainActivity.this, RoomActivity.class);
+        intent.putExtra(ROOM_NAME_MESSAGE, room.name);
+        startActivity(intent);
+    }
+
+    private void RoomPasswordRequest(final Room room)
+    {
+        LayoutInflater inflater = getLayoutInflater();
+
+        final View viewInflated = inflater.inflate(R.layout.singleinputdialog, null, false);
+
+        final EditText passwordEditText = viewInflated.findViewById(R.id.passwordEditText);
+
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(viewInflated);
+        builder.setTitle("Introduce the room password:");
+        builder.setCancelable(true);
+        builder.setPositiveButton("Enter", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i)
+            {
+                if(passwordEditText.getText().length() > 0)
+                {
+                    if(room.password.compareTo(passwordEditText.getText().toString()) == 0)
+                    {
+                        sharedPrefs.edit().putString(room.name, room.password).apply();
+                        GoToRoomActivity(room);
+                    }
+                    else
+                    {
+                        Toast.makeText(MainActivity.this, "Error: Incorrect password", Toast.LENGTH_SHORT).show();
+                        RoomPasswordRequest(room);
+                    }
                 }
             }
         });
