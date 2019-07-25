@@ -143,6 +143,7 @@ public class RoomActivity extends AppCompatActivity {
 
     private RecyclerView messagesRV;
     private MessageAdapter adapter;
+    private LinearLayoutManager layoutManager;
 
     private EditText inputText;
 
@@ -162,7 +163,10 @@ public class RoomActivity extends AppCompatActivity {
         messagesRV = findViewById(R.id.messagesRV);
         adapter = new MessageAdapter();
         messagesRV.setAdapter(adapter);
-        messagesRV.setLayoutManager(new LinearLayoutManager(this));
+
+        layoutManager = new LinearLayoutManager(this);
+        layoutManager.setStackFromEnd(true);
+        messagesRV.setLayoutManager(layoutManager);
 
         Init();
 
@@ -220,5 +224,9 @@ public class RoomActivity extends AppCompatActivity {
         roomRef.collection("messages").document().set(newMessage);
 
         inputText.setText(null);
+
+        messages.add(newMessage);
+
+        messagesRV.smoothScrollToPosition(messages.size()-1);
     }
 }
